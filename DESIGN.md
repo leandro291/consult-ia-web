@@ -180,7 +180,7 @@ components:
 
 # Design System: Clínica Demo
 
-<!-- Fuente: canvas de diseño "Clínica: Login y layouts" (https://claude.ai/artifact/LZeFPnEjFHgUwnUvs9HvR2), 17 pantallas. Los nombres de pacientes y médicos del canvas son ilustrativos; la app usa los de src/data/seed.js. Aún no hay tema de PrimeVue; volver a correr /impeccable document cuando exista para confirmar los valores reales. -->
+<!-- Fuente: canvas de diseño "Clínica: Login y layouts" (https://claude.ai/artifact/LZeFPnEjFHgUwnUvs9HvR2), 17 pantallas. Los nombres de pacientes y médicos del canvas son ilustrativos; la app usa los de src/data/seed.js. -->
 
 ## Overview
 

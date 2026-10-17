@@ -7,7 +7,7 @@ Este archivo es la **fuente de verdad** para lo siguiente:
 - Nombres.
 - Diseño visual, que delega en `DESIGN.md` y `docs/diseno/` (ver [Diseño](#diseño)).
 
-Toda nueva carpeta, archivo o dependencia debe seguirlo. Si algo nuevo no encaja, se actualiza este archivo **dentro del mismo spec** antes de implementarlo (ver `CLAUDE.md`).
+Toda nueva carpeta, archivo o dependencia debe seguirlo. Si algo nuevo no encaja, se actualiza este archivo antes de implementarlo.
 
 ---
 
@@ -58,7 +58,6 @@ Toda nueva carpeta, archivo o dependencia debe seguirlo. Si algo nuevo no encaja
 
 ```
 consult-ia/
-├── CLAUDE.md                 # Reglas del proyecto, dominio y metodología SDD
 ├── SETUP.md                  # Este archivo: arquitectura, instalación, convenciones
 ├── README.md                 # Presentación del proyecto y limitaciones (fase 6)
 ├── PRODUCT.md                # Contexto de producto (usuarios, propósito, principios)
@@ -69,11 +68,6 @@ consult-ia/
 ├── eslint.config.js          # ESLint flat config (JS + Vue)
 ├── .gitignore
 ├── .env.example               # Plantilla de variables de entorno (VITE_IA_SERVIDOR_URL)
-│
-├── .claude/
-│   └── agents/               # Subagentes SDD: orquestador, spec-writer, developer, reviewer
-│
-├── specs/                    # Specs SDD: NNN-nombre-en-kebab.md
 │
 ├── docs/
 │   └── diseno/               # Guía de pantallas y fuentes del canvas de diseño (referencia, no se compila)
@@ -116,8 +110,8 @@ consult-ia/
 │   │   ├── useFecha.js
 │   │   ├── useConfirmacion.js
 │   │   ├── useDictado.js     # Envoltura de Web Speech API
-│   │   ├── useAsistenteConsulta.js # Orquesta dictado → IA → formulario y arma el borrador de receta (spec 018)
-│   │   └── useAlertasAlergias.js # Cruza medicamentos y alergias del paciente y maneja la confirmación de "Mantener" (spec 018)
+│   │   ├── useAsistenteConsulta.js # Orquesta dictado → IA → formulario y arma el borrador de receta
+│   │   └── useAlertasAlergias.js # Cruza medicamentos y alergias del paciente y maneja la confirmación de "Mantener"
 │   │
 │   ├── layouts/              # Un layout por rol (menú + <RouterView>)
 │   │   ├── RecepcionLayout.vue
@@ -167,7 +161,7 @@ consult-ia/
     └── composables/          # Solo cuando la lógica no dependa del navegador real
 ```
 
-**Qué se testea (mínimo, en la fase 8 de `CLAUDE.md`, en curso):**
+**Qué se testea (mínimo, fase 8, en curso):**
 - Reglas de negocio de `services/`:
   - Solapamiento de citas.
   - Horario.
@@ -183,13 +177,13 @@ Los componentes visuales no requieren tests unitarios.
 
 - Viven en `tests/` en la raíz, con una carpeta por cada capa de `src/` que tenga funciones testeables (`services/`, `utils/`, `data/`, `router/`, `pdf/`, `composables/`, `views/`), espejando el nombre de la carpeta de origen.
 - Cada archivo se llama igual que el archivo que testea, con el sufijo `.test.js` (ej. `src/services/citasService.js` → `tests/services/citasService.test.js`), según la tabla de [Convenciones de nombres](#convenciones-de-nombres).
-- El catálogo de funciones a probar es [`docs/funciones-testeables.md`](docs/funciones-testeables.md); la guía para escribir los casos es [`.claude/skills/test-unit/SKILL.md`](.claude/skills/test-unit/SKILL.md). Si chocan entre sí o con lo de más arriba, manda el orden de prioridad de `CLAUDE.md`: primero este archivo (ej. el `fetch` simulado de `iaService.js` que pide `SETUP.md`, frente a "nada de piezas falsas" de la skill).
+- El catálogo de funciones a probar es [`docs/funciones-testeables.md`](docs/funciones-testeables.md).
 
 ---
 
 ## Instalación y comandos
 
-> Estado actual: **fase 8 en curso: el spec 021 agrega al panel del día (`/recepcion/dashboard`) la hoja "Resumen de la semana" con dos gráficos (`ResumenSemana.vue`, `chart.js` vía `Chart` de PrimeVue): citas por día y estado, y carga por médico, con conteos de `utils/estadisticas.js`; el spec 020 agrega a `DetalleCitaDialog.vue` (Mi agenda, vista Semana) "Ver historia clínica" en cualquier estado de la cita y, según el estado, "Atender cita" (`programada`/`confirmada`) o "Generar receta PDF" (`atendida` con `consultaId`, deshabilitado con aviso si falta la consulta); el diálogo solo emite (`atender`, `ver-historia`, `generar-receta`) y `CalendarioCitas.vue` los reemite igual que con `EventoCita.vue`, sin tocar `MiAgendaView.vue` ni `consultasService.js`**; fase 8 iniciada: el spec 019 deja `SETUP.md` alineado con los tests que ya existen desde el spec 001 y agrega `tests/pdf/` al árbol, sin sumar casos de prueba**; fase 7 completa: el spec 018 agrega a "Atender cita" la hoja "Borrador de receta" (bajo "Consulta", visible solo si la última generación correcta trae `receta` o `indicacionesPaciente`): medicamentos editables (agregar y quitar, como en Emitir receta) marcados "Sugerido por IA" hasta que se editan, e "Indicaciones para el paciente"; `utils/alergias.js` (familias de penicilina, AINEs y sulfas de `CLAUDE.md`, `buscarConflictos`) y `useAlertasAlergias.js` (conflictos, pendientes y `mantener`, con el aviso "N alerta(s) de alergia sin resolver") alimentan `AlertaAlergiaMedicamento.vue` (bloque rojo con la casilla de confirmar, "Mantener" y "Quitar medicamento") y el chip "Alergia: <alergia>", tanto en el borrador de Atender cita como en Emitir receta; el borrador pasa de una vista a otra en memoria por `useRecetasStore` (`fijarBorrador`/`tomarBorrador` por citaId, sin persistir) y sus indicaciones se guardan como `indicacionesGenerales` de la receta, sin campo nuevo; `RecetaForm.vue` gana título, etiqueta y ayuda de indicaciones y marcas de IA configurables por prop, y `ConsultaForm.vue` deshabilita "Guardar consulta" con el aviso de alergias sin resolver**; fase 7 en curso: el spec 017 agrega a "Atender cita" el panel "Asistente de consulta" (dictado por voz y "Generar con IA"): `useDictado.js` (envoltura de Web Speech API, sin dependencias, con soporte, estado, error y las acciones de iniciar, pausar, reanudar, detener y limpiar), `utils/anonimizar.js` (contexto anónimo del paciente para la IA), `useAsistenteConsulta.js` (orquesta transcripción → `generarSugerencias` → sugerencia con la forma del formulario) y `iaService.js` con `asistenteActivo()`; `components/asistente/` con `PanelAsistente.vue`, `ControlesDictado.vue` y `MarcaSugerido.vue`; `ConsultaForm.vue` recibe la sugerencia, la marca a lápiz por campo y cuenta los campos sugeridos, y `DiagnosticosField.vue` marca "código a verificar" y quita por posición; `consultasService.js` guarda `generadaConIA` y `transcripcion` solo cuando la consulta se generó con IA; sin borrador de receta desde la IA, `alergias.js` ni `indicacionesPaciente` en el PDF, que van en el spec 018**; fase 7 iniciada: el spec 016 deja `iaService.js` con la URL del servidor de IA leída de `VITE_IA_SERVIDOR_URL` (variable de entorno de build de Vite, ver "Variables de entorno" más abajo) en vez de una pantalla de configuración: `generarSugerencias(transcripcion, contexto)` no recibe la URL por parámetro y lanza un error en español si la variable está vacía; se mantienen el POST, el timeout de 30 s, la extracción y validación mínima del JSON de respuesta y los mensajes de error; no hay ruta `/medico/configuracion`, vista, entrada de menú, `stores/ia.js` ni `clinica_config`; sin dictado, asistente en Atender cita ni receta desde la IA, que van en los specs 017 y 018; la fase 6 queda pendiente (salvo el panel del día, adelantado en el spec 010)**; fase 5 en curso: el spec 014 agrega "Emitir receta" (`/medico/receta/:consultaId`): cabecera con el paciente y la consulta, franja de alergias, formulario de medicamentos (`RecetaForm.vue`) y los botones "Descargar" e "Imprimir", que guardan la receta (una por consulta, `recetasService.js`, `useRecetasStore`) y generan el PDF con `pdf/comunes.js` y `pdf/recetaPdf.js`; Atender cita ya no navega a Mi agenda al guardar la consulta, y muestra "Generar receta PDF" en las citas atendidas; el spec 015 agrega la vista previa en vivo de la receta (`VistaPreviaReceta.vue`), la columna derecha de Emitir receta con el nombre del archivo y la hoja que refleja el PDF mientras se edita; sin el pie de receta en la Historia clínica, que queda para un spec aparte (016)**; fase 4 implementada: el spec 011 inicia la fase con "Mi agenda" del médico (`/medico/agenda`, `CalendarioCitas.vue` en modo `soloLectura`) y la capa de datos de consultas (`consultasService.js`, `useConsultasStore`, `atenderCita` en `citasService.js`); el spec 012 agrega la pantalla "Atender cita" (`/medico/atencion/:citaId`), sin el asistente de consulta por voz: cabecera con el paciente y la cita, franja de alergias, última consulta y el formulario de consulta con diagnósticos CIE-10 (`src/data/cie10.js`); el spec 013 agrega la Historia clínica (`/medico/historia/:pacienteId`): ficha del paciente, línea de tiempo con todas las consultas (orden por fecha, expandidas o resumidas) y los accesos desde Mi agenda ("Ver historia" en las citas atendidas) y Atender cita ("Historia clínica" y "Ver historia clínica completa"); fase 3 implementada: el spec 006 aportó la capa de datos de citas (`citasService` y store), el spec 007 agrega la agenda de recepción con FullCalendar (ver, filtrar por médico y reprogramar arrastrando), el spec 008 el detalle de cita (popover de solo lectura al hacer clic) y el spec 009 agrega crear citas (botón de cabecera y clic en un hueco libre) y cancelarlas desde la agenda de recepción; el spec 010 adelanta de la fase 6 el panel del día de recepción (`/recepcion/dashboard`), con las pestañas-filtro por estado y la tabla de citas de hoy; fase 2 implementada (specs 003 y 004); fase 1 implementada, con el login diseñado (spec 002). El proyecto Vue está generado (Vite + Vue 3 en JS, Router, Pinia, PrimeVue tematizado con el preset de la clínica, login simulado y diseñado, layouts por rol y datos semilla). Los layouts tienen el menú lateral diseñado (spec 005); las demás pantallas siguen sin diseño. Las rutas de fases futuras usan `EnConstruccionView.vue`.
+> Estado actual: el proyecto Vue está generado y funcional (Vite + Vue 3 en JS, Router, Pinia, PrimeVue tematizado con el preset de la clínica, login simulado, layouts por rol con menú lateral y datos semilla). Incluye la agenda de recepción (FullCalendar), el panel del día con el resumen de la semana, Mi agenda del médico, Atender cita con asistente de consulta por voz e IA, historia clínica, recetas en PDF y alertas de alergias. Las rutas de funciones futuras usan `EnConstruccionView.vue`.
 
 ### Instalación por fase
 
@@ -200,7 +194,7 @@ No se usa `npm create vite`: los archivos base se escriben a mano y cada fase in
 npm install vue vue-router pinia primevue dayjs
 npm install -D vite @vitejs/plugin-vue eslint @eslint/js eslint-plugin-vue globals vitest jsdom
 
-# Fase 1 — diseño del login (spec 002)
+# Fase 1 — diseño del login
 npm install @primeuix/themes
 
 # Fase 3 (agenda)
@@ -228,7 +222,7 @@ Copiar `.env.example` a `.env` y completar `VITE_IA_SERVIDOR_URL` con la URL del
 | `build` | `vite build` | Build de producción en `dist/` |
 | `preview` | `vite preview` | Sirve el build localmente |
 | `lint` | `eslint .` | Lint de JS y Vue |
-| `test` | `vitest` | Tests en modo watch; `npm run test -- --run` para una sola pasada (la que usan developer y reviewer) |
+| `test` | `vitest` | Tests en modo watch; `npm run test -- --run` para una sola pasada |
 
 ### Configuración mínima esperada
 
@@ -301,7 +295,7 @@ Los imports internos usan el alias `@/` (ej. `import { leer } from '@/services/s
 | `jsdom` | Simula el navegador (`localStorage`, `window`) en los tests |
 
 Para agregar una dependencia nueva hace falta:
-1. Justificarla en un spec.
+1. Justificarla en la descripción del cambio.
 2. Agregarla a estas tablas.
 
 ---
@@ -318,8 +312,6 @@ Para agregar una dependencia nueva hace falta:
 | Store | `camelCase.js` en plural, exporta `use<Dominio>Store` | `citas.js` → `useCitasStore` |
 | Util / data / pdf | `camelCase.js` | `anonimizar.js`, `recetaPdf.js` |
 | Test | mismo nombre que el archivo + `.test.js` | `citasService.test.js` |
-| Spec | `NNN-nombre-en-kebab.md` | `003-agenda-citas.md` |
-| Agente | `kebab-case.md` | `spec-writer.md` |
 | Clave de localStorage | `clinica_` + entidad en plural, `snake_case` | `clinica_citas` |
 | Variable CSS de diseño | `--` + grupo en español + nombre del token de `DESIGN.md` | `--color-tinta`, `--radio-md`, `--espacio-lg`, `--sombra-hoja`, `--fuente-dato` |
 | Clase CSS global | kebab-case en español | `.campo`, `.campo-con-error`, `.tipo-label`, `.icono` |
@@ -344,7 +336,7 @@ El diseño que se implementa es el que creamos para este proyecto. No se inventa
 | Composición de cada pantalla (qué va dónde, textos, estados) | [`docs/diseno/pantallas/`](docs/diseno/pantallas/) (guía en [`docs/diseno/README.md`](docs/diseno/README.md)) | la maqueta de cada ruta |
 | Contexto de producto (usuarios, principios) | [`PRODUCT.md`](PRODUCT.md) | decisiones de UX |
 
-- **Si hay conflicto:** `DESIGN.md` manda sobre las pantallas, y ambos mandan sobre cualquier skill de diseño (Impeccable, emil-design-eng, frontend-design, etc.). `CLAUDE.md` sigue por encima de todo.
+- **Si hay conflicto:** `DESIGN.md` manda sobre las pantallas y ambos mandan sobre cualquier guía de diseño genérica.
 - **El canvas en línea es una copia.** Si difiere del repo, vale el repo.
 - **Datos de ejemplo:** los nombres de pacientes y médicos de las pantallas son ilustrativos; la app usa los de `src/data/seed.js`.
 
@@ -353,11 +345,11 @@ El diseño que se implementa es el que creamos para este proyecto. No se inventa
 - Los hex de `DESIGN.md` viven en un solo lugar: las variables `--color-*` de `src/assets/main.css`. El preset de `@primeuix/themes` (`src/assets/presetClinica.js`) las referencia con `var(--color-...)` y no repite hex; los componentes tampoco escriben colores hex sueltos.
 - `main.css` declara `@layer base, primevue;`. PrimeVue se registra en `main.js` con `cssLayer: { name: 'primevue', order: 'base, primevue' }`, así el reset de la capa `base` no pisa a PrimeVue, y los ajustes de componentes sin capa (`.p-inputtext`, `.p-button:disabled`) sí ganan sobre los estilos que PrimeVue inyecta.
 - Se usan los componentes de PrimeVue tematizados para que se vean como en `DESIGN.md`; no se reemplazan por componentes propios.
-- Cambiar el diseño implica actualizar primero `DESIGN.md` (y la pantalla en `docs/diseno/pantallas/` si cambia la composición), dentro del mismo spec.
+- Cambiar el diseño implica actualizar primero `DESIGN.md` (y la pantalla en `docs/diseno/pantallas/` si cambia la composición).
 
 ### Antes de commitear cambios de interfaz
 
-`developer` y `reviewer` verifican, además de lint:
+Se verifica, además de lint:
 
 1. La pantalla sigue su archivo en `docs/diseno/pantallas/`: estructura, jerarquía, textos y estados (vacío, carga y error).
 2. Solo se usan tokens de `DESIGN.md`; no aparecen colores, fuentes ni radios nuevos.
@@ -368,4 +360,4 @@ El diseño que se implementa es el que creamos para este proyecto. No se inventa
    - Ningún estado indicado solo con color.
 4. Accesibilidad: labels reales, foco visible, contraste AA y `aria-label` con contexto en las acciones repetidas.
 
-Si algo del diseño no se puede implementar tal cual, se anota en el spec y se decide con el usuario; no se improvisa.
+Si algo del diseño no se puede implementar tal cual, se anota y se decide con el responsable del producto; no se improvisa.

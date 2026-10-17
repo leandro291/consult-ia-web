@@ -1,14 +1,12 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
-
 ## Platform
 
 web
 
 ## Stack
 
-Vue 3 + Vite (JavaScript, sin TypeScript), Vue Router, Pinia y PrimeVue. FullCalendar, Day.js y pdfmake. ESLint y Vitest. Detalle en `SETUP.md`. El proyecto Vue aún no está generado (se crea en la fase 1).
+Vue 3 + Vite (JavaScript, sin TypeScript), Vue Router, Pinia y PrimeVue. FullCalendar, Day.js y pdfmake. ESLint y Vitest. Detalle en `SETUP.md`.
 
 ## Users
 

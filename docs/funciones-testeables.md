@@ -1,7 +1,7 @@
 # Funciones candidatas a pruebas unitarias
 
 Catálogo de referencia de las funciones puras / de lógica de negocio del proyecto que son
-candidatas razonables para pruebas unitarias (Vitest, fase 8 de `CLAUDE.md`). No incluye
+candidatas razonables para pruebas unitarias (Vitest, fase 8). No incluye
 componentes `.vue`, stores de Pinia, handlers de eventos ni lógica atada al ciclo de vida de
 Vue o al DOM. Las funciones marcadas **(interna)** no están exportadas por su archivo; para
 testearlas directamente haría falta exportarlas (o cubrirlas a través de la función pública que
