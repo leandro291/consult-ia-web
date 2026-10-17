@@ -17,8 +17,7 @@ Aplicación web para gestionar una clínica con varios consultorios: **citas**, 
 - [Diseño e interfaz](#diseño-e-interfaz)
 - [PDFs](#pdfs)
 - [Asistente de consulta por voz (IA)](#asistente-de-consulta-por-voz-ia)
-- [Metodología de desarrollo (SDD)](#metodología-de-desarrollo-sdd)
-- [Plan de desarrollo y estado actual](#plan-de-desarrollo-y-estado-actual)
+- [Estado actual](#estado-actual)
 - [Tests](#tests)
 - [Limitaciones conocidas](#limitaciones-conocidas)
 
@@ -210,7 +209,7 @@ src/
 
 `tests/` en la raíz replica esta estructura con una carpeta por capa testeada (ver [Tests](#tests)).
 
-> Nota: `src/pdf/` todavía no incluye un `historiaPdf.js`; la exportación de la historia clínica a PDF (prevista en el plan de fases) aún no está implementada. La receta sí genera PDF completo (descargar e imprimir).
+> Nota: `src/pdf/` todavía no incluye un `historiaPdf.js`; la exportación de la historia clínica a PDF (prevista pero aún sin implementar) aún no está implementada. La receta sí genera PDF completo (descargar e imprimir).
 
 ## Modelo de datos
 
@@ -310,70 +309,16 @@ Función destacada del proyecto: el médico dicta la consulta y la app prellena 
 
 `src/data/seed.js` incluye una transcripción de ejemplo (`TRANSCRIPCION_DEMO`) cargable con el botón "Usar ejemplo", para probar el asistente sin micrófono. Uno de los pacientes semilla es alérgico a la penicilina, para poder ver la alerta de alergias con la receta sugerida (amoxicilina).
 
-## Metodología de desarrollo (SDD)
+## Estado actual
 
-El proyecto se construyó con **Spec-Driven Development**: todo requerimiento pasa primero por un spec en `specs/`.
-
-### Flujo
-
-1. `orquestador` clasifica el pedido (SDD, implementación directa o pregunta) y delega en `spec-writer`.
-2. `spec-writer` escribe `specs/NNN-nombre.md` con `Estado: borrador`. El flujo se detiene ahí: el usuario aprueba o pide cambios.
-3. Con la aprobación, el spec pasa a `Estado: aprobado` y `developer` implementa sus tareas.
-4. `reviewer` revisa en solo lectura (spec, estructura, restricciones, SOLID/DRY, lint, build y tests existentes) y devuelve `APROBADO` o una lista de `ERRORES`.
-5. Si hay errores, vuelven al `developer` → `reviewer`, hasta un **máximo de 3 ciclos**.
-6. Con el visto bueno del usuario, el spec pasa a `Estado: implementado`.
-
-### Agentes (`.claude/agents/`)
-
-| Agente | Rol | Tools | Modelo |
-|---|---|---|---|
-| `orquestador` | Punto de entrada; clasifica y delega. No edita nada. | `Agent(spec-writer, developer, reviewer)`, `Read`, `Glob`, `Grep`, `Skill` | sonnet |
-| `spec-writer` | Escribe el spec; no escribe código. | `Read`, `Glob`, `Grep`, `Write`, `Edit`, `Skill` | opus |
-| `developer` | Implementa las tareas del spec aprobado. | `Read`, `Glob`, `Grep`, `Write`, `Edit`, `Bash`, `Skill` | sonnet |
-| `reviewer` | Revisa en solo lectura; aprueba o lista errores. | `Read`, `Glob`, `Grep`, `Bash`, `Skill` | sonnet |
-
-### Specs y prioridad
-
-- Formato: `specs/NNN-nombre-en-kebab.md`, numeración correlativa de 3 dígitos.
-- Campo `Estado:` con uno de `borrador`, `aprobado` o `implementado`.
-- Orden de prioridad ante conflictos: **`CLAUDE.md` > `SETUP.md` > el spec aprobado > cualquier skill**.
-
-Specs existentes (todos con `Estado: implementado`):
-
-| Spec | Tema |
-|---|---|
-| 000 | Base documental SDD |
-| 001 | Base del proyecto |
-| 002 | Diseño del login |
-| 003 | Catálogos: consultorios y médicos |
-| 004 | Catálogos: pacientes |
-| 005 | Menú lateral y layouts |
-| 006 | Citas: servicio y store |
-| 007 | Agenda con FullCalendar |
-| 008 | Detalle de cita en la agenda |
-| 009 | Crear y cancelar cita desde la agenda |
-| 010 | Dashboard de recepción |
-| 011 | Mi agenda del médico y consultas |
-| 012 | Atender cita |
-| 013 | Historia clínica |
-| 014 | Emitir receta en PDF |
-| 015 | Vista previa de la receta |
-| 016 | Configuración del servicio de IA (variable de entorno) |
-| 017 | Dictado y asistente de consulta |
-| 018 | Receta con IA y alertas de alergia |
-| 019 | Setup de pruebas unitarias |
-| 020 | Acciones en el detalle de cita del médico |
-
-## Plan de desarrollo y estado actual
-
-Fases según `CLAUDE.md`, en el orden en que se ejecutaron como specs:
+Fases de construcción del proyecto:
 
 1. **Base** — completa: Vite + Vue 3, ESLint, Vitest, Router, Pinia, PrimeVue, layouts por rol, `storage.js`, semilla, login y guard de roles.
 2. **Catálogos** — completa: CRUD de pacientes, médicos y consultorios.
 3. **Citas** — completa: agenda con FullCalendar, crear/reprogramar/cancelar, validación de solapamiento y horario.
 4. **Atención médica** — completa: agenda del médico, atención de cita, consulta con CIE-10, historia clínica.
 5. **Recetas y PDFs** — completa para la receta (formulario + PDF); el PDF de historia clínica queda pendiente.
-6. **Cierre** — parcial: el dashboard de recepción ya existe (adelantado en el spec 010); exportar/importar JSON, restablecer demo y el pulido final de esa fase siguen pendientes (la ruta `/recepcion/respaldo` todavía usa la vista provisional).
+6. **Cierre** — parcial: el dashboard de recepción ya existe; exportar/importar JSON, restablecer demo y el pulido final de esa fase siguen pendientes (la ruta `/recepcion/respaldo` todavía usa la vista provisional).
 7. **Asistente de consulta por voz (IA)** — completa: dictado, anonimización, `iaService.js`, alertas de alergia, integración en "Atender cita" y borrador de receta, texto de demo.
 8. **Tests** — en curso: ya hay pruebas de `services/`, `utils/`, `data/`, `router/`, `pdf/` y algún `composable`/`view`; la cobertura se sigue ampliando (ver [Tests](#tests)).
 
